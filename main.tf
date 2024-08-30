@@ -152,7 +152,18 @@ resource "azurerm_virtual_machine" "vm" {
     admin_username = var.admin_username
     admin_password = var.admin_password
 
-    custom_data = file("jenkins_install.sh")
+  custom_data = <<-EOF
+                #!/bin/bash
+                sudo apt-get update
+                sudo apt-get install -y openjdk-11-jdk
+                sudo apt-get install -y wget
+                wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+                sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary > /etc/apt/sources.list.d/jenkins.list'
+                sudo apt-get update
+                sudo apt-get install -y jenkins
+                sudo systemctl start jenkins
+                sudo systemctl enable jenkins
+                EOF
   }
   os_profile_linux_config {
     disable_password_authentication = false
