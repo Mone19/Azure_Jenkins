@@ -42,7 +42,7 @@ resource "azurerm_public_ip" "vmpip" {
   name                = "${var.prefix}-publicip"
   location            = azurerm_resource_group.vmrg.location
   resource_group_name = azurerm_resource_group.vmrg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 }
 
 # Network Interface
