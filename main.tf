@@ -42,7 +42,7 @@ resource "azurerm_public_ip" "vmpip" {
   name                = "${var.prefix}-publicip"
   location            = azurerm_resource_group.vmrg.location
   resource_group_name = azurerm_resource_group.vmrg.name
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
 }
 
 # Network Interface
@@ -65,6 +65,7 @@ resource "azurerm_network_security_group" "vmnsg" {
   location            = azurerm_resource_group.vmrg.location
   resource_group_name = azurerm_resource_group.vmrg.name
 
+  # Eingehende Regeln
   security_rule {
     name                       = "allow-ssh"
     priority                   = 1003
@@ -77,7 +78,6 @@ resource "azurerm_network_security_group" "vmnsg" {
     destination_address_prefix = "*"
   }
 
-  # Vorherige Regeln
   security_rule {
     name                       = "allow-http"
     priority                   = 1001
@@ -110,6 +110,19 @@ resource "azurerm_network_security_group" "vmnsg" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = 8080
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # Ausgehende Regeln
+  security_rule {
+    name                       = "allow-all-outbound"
+    priority                   = 100
+    direction                  = "Outbound"
+    access                     = "Allow"
+    protocol                   = "*"
+    source_port_range          = "*"
+    destination_port_range     = "*"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
