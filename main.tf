@@ -42,7 +42,7 @@ resource "azurerm_public_ip" "vmpip" {
   name                = "${var.prefix}-publicip"
   location            = azurerm_resource_group.vmrg.location
   resource_group_name = azurerm_resource_group.vmrg.name
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
 }
 
 # Network Interface
@@ -52,9 +52,10 @@ resource "azurerm_network_interface" "vmnic" {
   resource_group_name = azurerm_resource_group.vmrg.name
 
   ip_configuration {
-    name                          = "testconfiguration1"
+    name                          = "configuration"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.vmpip.id
   }
 }
 
