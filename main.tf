@@ -172,3 +172,4 @@ resource "azurerm_virtual_machine" "vm" {
     environment = "staging"
   }
 }
+
