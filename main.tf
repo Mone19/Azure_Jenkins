@@ -134,10 +134,5 @@ resource "azurerm_virtual_machine" "jenkins-vm" {
 
   os_profile_linux_config {
     disable_password_authentication = true
-
-    ssh_keys {
-      path     = "/home/${var.admin_username}/.ssh/authorized_keys"
-      key_data = azurerm_ssh_public_key.jenkins-key.public_key
-    }
   }
 }
