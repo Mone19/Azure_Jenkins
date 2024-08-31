@@ -143,6 +143,6 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = true
+    disable_password_authentication = false
   }
 }
