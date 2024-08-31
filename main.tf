@@ -111,6 +111,14 @@ resource "azurerm_network_interface_security_group_association" "jenkins_nsg" {
   network_security_group_id = azurerm_network_security_group.jenkins_vmnsg.id
 }
 
+# SSH Public Key
+resource "azurerm_ssh_public_key" "example" {
+  name                = "example"
+  resource_group_name = "example"
+  location            = "West Europe"
+  public_key          = file("~/.ssh/id_rsa.pub")
+}
+
 # Virtual Machine
 resource "azurerm_virtual_machine" "jenkins_vm" {
   name                  = "${random_pet.resource_name.id}-vm"
@@ -143,6 +151,6 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = false
+    disable_password_authentication = true
   }
 }

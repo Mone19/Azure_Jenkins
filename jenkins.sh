@@ -13,10 +13,11 @@ wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr
 echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 # Update package lists again and install Jenkins
-sudo apt-get update && sudo apt-get install jenkins -y
+sudo apt update
+sudo apt install jenkins -y
 
 # Install additional packages
-sudo apt-get install -y git nodejs npm unzip jq docker.io
+sudo apt install -y git nodejs npm unzip jq docker.io
 
 # Configure Docker and Jenkins
 sudo systemctl start jenkins
