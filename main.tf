@@ -17,15 +17,6 @@ resource "random_pet" "resource_name" {
   separator = "-"
 }
 
-variable "admin_username" {
-  description = "Admin username for the virtual machine"
-}
-
-variable "admin_password" {
-  description = "Admin password for the virtual machine"
-  sensitive   = true
-}
-
 # Resource Group
 resource "azurerm_resource_group" "jenkins_rg" {
   name     = "${random_pet.resource_name.id}-resources"
@@ -143,5 +134,6 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = false
+    disable_password_authentication = false  # Set this to false to allow password authentication
+  }
 }
