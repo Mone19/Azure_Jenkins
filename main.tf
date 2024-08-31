@@ -17,19 +17,24 @@ resource "random_pet" "resource_name" {
   separator = "-"
 }
 
-variable "prefix" {
-  default = "tfvmex"
+variable "admin_username" {
+  description = "Admin username for the virtual machine"
+}
+
+variable "admin_password" {
+  description = "Admin password for the virtual machine"
+  sensitive   = true
 }
 
 # Resource Group
 resource "azurerm_resource_group" "jenkins_rg" {
-  name     = "${var.prefix}-${random_pet.resource_name.id}-resources"
+  name     = "${random_pet.resource_name.id}-resources"
   location = "West Europe"
 }
 
 # Virtual Network
 resource "azurerm_virtual_network" "jenkins_vmnet" {
-  name                = "${var.prefix}-${random_pet.resource_name.id}-network"
+  name                = "${random_pet.resource_name.id}-network"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
@@ -45,7 +50,7 @@ resource "azurerm_subnet" "jenkins_subnet" {
 
 # Network Security Group
 resource "azurerm_network_security_group" "jenkins_vmnsg" {
-  name                = "${var.prefix}-${random_pet.resource_name.id}-nsg"
+  name                = "${random_pet.resource_name.id}-nsg"
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
 
@@ -89,7 +94,7 @@ resource "azurerm_network_security_group" "jenkins_vmnsg" {
 
 # Network Interface
 resource "azurerm_network_interface" "jenkins_vmnic" {
-  name                = "${var.prefix}-${random_pet.resource_name.id}-nic"
+  name                = "${random_pet.resource_name.id}-nic"
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
 
@@ -108,7 +113,7 @@ resource "azurerm_network_interface_security_group_association" "jenkins_nsg" {
 
 # Virtual Machine
 resource "azurerm_virtual_machine" "jenkins_vm" {
-  name                  = "${var.prefix}-${random_pet.resource_name.id}-vm"
+  name                  = "${random_pet.resource_name.id}-vm"
   resource_group_name   = azurerm_resource_group.jenkins_rg.name
   location              = azurerm_resource_group.jenkins_rg.location
   vm_size               = "Standard_DS1_v2"
@@ -138,6 +143,5 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = true
-  }
+    disable_password_authentication = false
 }
