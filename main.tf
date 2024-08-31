@@ -83,6 +83,14 @@ resource "azurerm_network_security_group" "jenkins_vmnsg" {
   }
 }
 
+# Public IP Address
+resource "azurerm_public_ip" "jenkins_vm_public_ip" {
+  name                = "${random_pet.resource_name.id}-public-ip"
+  location            = azurerm_resource_group.jenkins_rg.location
+  resource_group_name = azurerm_resource_group.jenkins_rg.name
+  allocation_method   = "Static"
+}
+
 # Network Interface
 resource "azurerm_network_interface" "jenkins_vmnic" {
   name                = "${random_pet.resource_name.id}-nic"
@@ -93,6 +101,7 @@ resource "azurerm_network_interface" "jenkins_vmnic" {
     name                          = "configuration"
     subnet_id                     = azurerm_subnet.jenkins_subnet.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.jenkins_vm_public_ip.id
   }
 }
 
@@ -134,6 +143,6 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = false  # Set this to false to allow password authentication
+    disable_password_authentication = false
   }
 }
