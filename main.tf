@@ -16,62 +16,40 @@ variable "prefix" {
 }
 
 # Resource group
-resource "azurerm_resource_group" "vmrg" {
+resource "azurerm_resource_group" "jenkins-rg" {
   name     = "${var.prefix}-resources"
   location = "West Europe"
 }
 
 # Virtual Network
-resource "azurerm_virtual_network" "vmvnet" {
+resource "azurerm_virtual_network" "jenkins-vmnet" {
   name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.vmrg.location
-  resource_group_name = azurerm_resource_group.vmrg.name
+  location            = azurerm_resource_group.jenkins-rg.location
+  resource_group_name = azurerm_resource_group.jenkins-rg.name
 }
 
 # Subnet
-resource "azurerm_subnet" "internal" {
-  name                 = "internal"
-  resource_group_name  = azurerm_resource_group.vmrg.name
-  virtual_network_name = azurerm_virtual_network.vmvnet.name
+resource "azurerm_subnet" "jenkins-subnet" {
+  name                 = "jenkins-subnet"
+  resource_group_name  = azurerm_resource_group.jenkins-rg.name
+  virtual_network_name = azurerm_virtual_network.jenkins-vmnet.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
-# Public IP
-resource "azurerm_public_ip" "vmpip" {
-  name                = "${var.prefix}-publicip"
-  location            = azurerm_resource_group.vmrg.location
-  resource_group_name = azurerm_resource_group.vmrg.name
-  allocation_method   = "Static"
-}
-
-# Network Interface
-resource "azurerm_network_interface" "vmnic" {
-  name                = "${var.prefix}-nic"
-  location            = azurerm_resource_group.vmrg.location
-  resource_group_name = azurerm_resource_group.vmrg.name
-
-  ip_configuration {
-    name                          = "configuration"
-    subnet_id                     = azurerm_subnet.internal.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.vmpip.id
-  }
-}
-
 # Network Security Group
-resource "azurerm_network_security_group" "vmnsg" {
+resource "azurerm_network_security_group" "jenkins-vmnsg" {
   name                = "${var.prefix}-nsg"
-  location            = azurerm_resource_group.vmrg.location
-  resource_group_name = azurerm_resource_group.vmrg.name
+  location            = azurerm_resource_group.jenkins-rg.location
+  resource_group_name = azurerm_resource_group.jenkins-rg.name
 
-  # Eingehende Regeln
+  # Inbound rules
   security_rule {
-    name                       = "allow-ssh"
-    priority                   = 1003
+    name                       = "AllowSSH"
+    priority                   = 1000
     direction                  = "Inbound"
     access                     = "Allow"
-    protocol                   = "Tcp"
+    protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = 22
     source_address_prefix      = "*"
@@ -79,11 +57,11 @@ resource "azurerm_network_security_group" "vmnsg" {
   }
 
   security_rule {
-    name                       = "allow-http"
+    name                       = "AllowHTTP"
     priority                   = 1001
     direction                  = "Inbound"
     access                     = "Allow"
-    protocol                   = "Tcp"
+    protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = 80
     source_address_prefix      = "*"
@@ -91,62 +69,54 @@ resource "azurerm_network_security_group" "vmnsg" {
   }
 
   security_rule {
-    name                       = "allow-https"
+    name                       = "AllowJenkins"
     priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = 443
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "allow-jenkins"
-    priority                   = 1000
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = 8080
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  # Ausgehende Regeln
-  security_rule {
-    name                       = "allow-all-outbound"
-    priority                   = 100
-    direction                  = "Outbound"
-    access                     = "Allow"
     protocol                   = "*"
     source_port_range          = "*"
-    destination_port_range     = "*"
+    destination_port_range     = "8080"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
+  }
+}
+
+# Network Interface
+resource "azurerm_network_interface" "jenkins-vmnic" {
+  name                = "${var.prefix}-nic"
+  location            = azurerm_resource_group.jenkins-rg.location
+  resource_group_name = azurerm_resource_group.jenkins-rg.name
+
+  ip_configuration {
+    name                          = "configuration"
+    subnet_id                     = azurerm_subnet.jenkins-subnet.id
+    private_ip_address_allocation = "Dynamic"
   }
 }
 
 # Network Interface Security Group Association
-resource "azurerm_network_interface_security_group_association" "vmnic-nsg" {
-  network_interface_id      = azurerm_network_interface.vmnic.id
-  network_security_group_id = azurerm_network_security_group.vmnsg.id
+resource "azurerm_network_interface_security_group_association" "jenkins-nsg" {
+  network_interface_id      = azurerm_network_interface.jenkins-vmnic.id
+  network_security_group_id = azurerm_network_security_group.jenkins-vmnsg.id
+}
+
+# SSH Public Key
+resource "azurerm_ssh_public_key" "jenkins-key" {
+  name                = "Jenkins_key"
+  resource_group_name = azurerm_resource_group.jenkins-rg.name
+  location            = azurerm_resource_group.jenkins-rg.location
+  public_key          = file("~/.ssh/id_rsa.pub")
 }
 
 # Virtual Machine
-resource "azurerm_virtual_machine" "vm" {
+resource "azurerm_virtual_machine" "jenkins-vm" {
   name                  = "${var.prefix}-vm"
-  location              = azurerm_resource_group.vmrg.location
-  resource_group_name   = azurerm_resource_group.vmrg.name
-  network_interface_ids = [azurerm_network_interface.vmnic.id]
+  resource_group_name   = azurerm_resource_group.jenkins-rg.name
+  location              = azurerm_resource_group.jenkins-rg.location
   vm_size               = "Standard_DS1_v2"
+  network_interface_ids = [azurerm_network_interface.jenkins-vmnic.id]
 
-  # Uncomment this line to delete the OS disk automatically when deleting the VM
   delete_os_disk_on_termination = true
-
-  # Uncomment this line to delete the data disks automatically when deleting the VM
-  # delete_data_disks_on_termination = true
 
   storage_image_reference {
     publisher = "Canonical"
@@ -154,22 +124,28 @@ resource "azurerm_virtual_machine" "vm" {
     sku       = "22_04-lts"
     version   = "latest"
   }
+  
   storage_os_disk {
     name              = "myosdisk1"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
+    
   }
+
   os_profile {
     computer_name  = "hostname"
     admin_username = var.admin_username
     admin_password = var.admin_password
+    custom_data = file("jenkins.sh")
   }
+
   os_profile_linux_config {
-    disable_password_authentication = false
-  }
-  tags = {
-    environment = "staging"
+    disable_password_authentication = true
+
+    ssh_keys {
+      path     = "/home/${var.admin_username}/.ssh/authorized_keys"
+      key_data = azurerm_ssh_public_key.jenkins-key.public_key
+    }
   }
 }
-
