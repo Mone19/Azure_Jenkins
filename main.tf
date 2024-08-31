@@ -112,11 +112,11 @@ resource "azurerm_network_interface_security_group_association" "jenkins_nsg" {
 }
 
 # SSH Public Key
-resource "azurerm_ssh_public_key" "example" {
-  name                = "example"
-  resource_group_name = "example"
-  location            = "West Europe"
-  public_key          = file("~/.ssh/id_rsa.pub")
+resource "azurerm_ssh_public_key" "ssh-key" {
+  name                = "ssh-key"
+  resource_group_name = azurerm_resource_group.jenkins_rg.name
+  location            = azurerm_resource_group.jenkins_rg.location
+  public_key          = var.ssh_public_key
 }
 
 # Virtual Machine
