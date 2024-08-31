@@ -111,14 +111,6 @@ resource "azurerm_network_interface_security_group_association" "jenkins_nsg" {
   network_security_group_id = azurerm_network_security_group.jenkins_vmnsg.id
 }
 
-# SSH Public Key
-resource "azurerm_ssh_public_key" "ssh-key" {
-  name                = "ssh-key"
-  resource_group_name = azurerm_resource_group.jenkins_rg.name
-  location            = azurerm_resource_group.jenkins_rg.location
-  public_key          = var.ssh_public_key
-}
-
 # Virtual Machine
 resource "azurerm_virtual_machine" "jenkins_vm" {
   name                  = "${random_pet.resource_name.id}-vm"

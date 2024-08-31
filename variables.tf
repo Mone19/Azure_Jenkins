@@ -8,8 +8,3 @@ variable "admin_password" {
   type        = string
   sensitive   = true
 }
-
-variable "ssh_public_key" {
-  description = "The SSH public key for accessing the VM."
-  type        = string
-}
