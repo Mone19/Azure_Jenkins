@@ -128,7 +128,6 @@ resource "azurerm_virtual_machine" "jenkins-vm" {
   os_profile {
     computer_name  = "hostname"
     admin_username = var.admin_username
-    admin_password = var.admin_password
     custom_data = file("jenkins.sh")
   }
 
