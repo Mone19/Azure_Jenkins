@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Update package lists
-sudo apt update -y
+sudo apt-get update -y
 
 # Install Java 21
-sudo apt install openjdk-21-jre -y
+sudo apt-get install openjdk-21-jre -y
+
 
 sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
   https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
@@ -13,3 +14,10 @@ echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
 sudo apt-get update -y
 sudo apt-get install jenkins -y
+sudo apt-get install nodejs npm -y
+
+# Install Git
+sudo apt-get install git -y
+
+# Install Maven
+sudo apt-get install apache-maven -y
