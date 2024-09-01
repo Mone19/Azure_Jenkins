@@ -14,10 +14,3 @@ echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
 sudo apt-get update -y
 sudo apt-get install jenkins -y
-sudo apt-get install nodejs npm -y
-
-# Install Git
-sudo apt-get install git -y
-
-# Install Maven
-sudo apt-get install apache-maven -y

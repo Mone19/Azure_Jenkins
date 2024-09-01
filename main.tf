@@ -11,21 +11,16 @@ provider "azurerm" {
   features {}
 }
 
-# Random Name Generator
-resource "random_pet" "resource_name" {
-  length    = 2
-  separator = "-"
-}
 
 # Resource Group
 resource "azurerm_resource_group" "jenkins_rg" {
-  name     = "${random_pet.resource_name.id}-resources"
+  name     = "resources"
   location = "West Europe"
 }
 
 # Virtual Network
 resource "azurerm_virtual_network" "jenkins_vmnet" {
-  name                = "${random_pet.resource_name.id}-network"
+  name                = "network"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
@@ -33,7 +28,7 @@ resource "azurerm_virtual_network" "jenkins_vmnet" {
 
 # Subnet
 resource "azurerm_subnet" "jenkins_subnet" {
-  name                 = "${random_pet.resource_name.id}-subnet"
+  name                 = "subnet"
   resource_group_name  = azurerm_resource_group.jenkins_rg.name
   virtual_network_name = azurerm_virtual_network.jenkins_vmnet.name
   address_prefixes     = ["10.0.2.0/24"]
@@ -41,13 +36,13 @@ resource "azurerm_subnet" "jenkins_subnet" {
 
 # Network Security Group
 resource "azurerm_network_security_group" "jenkins_vmnsg" {
-  name                = "${random_pet.resource_name.id}-nsg"
+  name                = "nsg"
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
 
   # Inbound rules
   security_rule {
-    name                       = "${random_pet.resource_name.id}-AllowSSH"
+    name                       = "AllowSSH"
     priority                   = 1000
     direction                  = "Inbound"
     access                     = "Allow"
@@ -59,7 +54,7 @@ resource "azurerm_network_security_group" "jenkins_vmnsg" {
   }
 
   security_rule {
-    name                       = "${random_pet.resource_name.id}-AllowHTTP"
+    name                       = "AllowHTTP"
     priority                   = 1001
     direction                  = "Inbound"
     access                     = "Allow"
@@ -71,7 +66,7 @@ resource "azurerm_network_security_group" "jenkins_vmnsg" {
   }
 
   security_rule {
-    name                       = "${random_pet.resource_name.id}-AllowJenkins"
+    name                       = "AllowJenkins"
     priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
@@ -85,7 +80,7 @@ resource "azurerm_network_security_group" "jenkins_vmnsg" {
 
 # Public IP Address
 resource "azurerm_public_ip" "jenkins_vm_public_ip" {
-  name                = "${random_pet.resource_name.id}-public-ip"
+  name                = "public-ip"
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
   allocation_method   = "Static"
@@ -93,7 +88,7 @@ resource "azurerm_public_ip" "jenkins_vm_public_ip" {
 
 # Network Interface
 resource "azurerm_network_interface" "jenkins_vmnic" {
-  name                = "${random_pet.resource_name.id}-nic"
+  name                = "nic"
   location            = azurerm_resource_group.jenkins_rg.location
   resource_group_name = azurerm_resource_group.jenkins_rg.name
 
@@ -113,7 +108,7 @@ resource "azurerm_network_interface_security_group_association" "jenkins_nsg" {
 
 # Virtual Machine
 resource "azurerm_virtual_machine" "jenkins_vm" {
-  name                  = "${random_pet.resource_name.id}-vm"
+  name                  = "vm"
   resource_group_name   = azurerm_resource_group.jenkins_rg.name
   location              = azurerm_resource_group.jenkins_rg.location
   vm_size               = "Standard_DS1_v2"
@@ -129,14 +124,14 @@ resource "azurerm_virtual_machine" "jenkins_vm" {
   }
 
   storage_os_disk {
-    name              = "${random_pet.resource_name.id}-osdisk"
+    name              = "osdisk"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name  = "${random_pet.resource_name.id}-hostname"
+    computer_name  = "hostname"
     admin_username = var.admin_username
     admin_password = var.admin_password
     custom_data    = file("jenkins.sh")
